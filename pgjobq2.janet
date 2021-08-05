@@ -22,7 +22,7 @@
   jobid)
 
 (defn try-enqueue-job
-  [pg-conn q job-data limit]
+  [pg-conn q limit job-data]
   (if (< (count-pending-jobs pg-conn q) limit)
     (enqueue-job pg-conn q job-data)
     nil))
