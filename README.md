@@ -19,7 +19,7 @@ In a web example, enqueue a job as part of a database transaction:
 ```
 (in-transaction... 
   (def job @{"your" "job"})
-  (def jobid (pgjobq/try-enqueue-job pg-conn "your-job-queue" job))
+  (def jobid (pgjobq/try-enqueue-job pg-conn "your-job-queue" job Q-LIMIT))
   (unless jobid (error "job queue over loaded")))
 ```
 
