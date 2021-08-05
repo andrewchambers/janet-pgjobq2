@@ -14,16 +14,17 @@
   [pg-conn q]
   (pq/val pg-conn "select count(*)::integer from jobq where q = $1 and completedat is null;" q))
 
+(defn enqueue-job
+  [pg-conn q job-data]
+  (def jobid
+    (pq/val pg-conn "insert into jobq(q, data) values($1, $2) returning jobid;" q (string/format "%j" job-data)))
+  (pq/exec pg-conn (string "notify \"jobq-" q "-new\";"))
+  jobid)
+
 (defn try-enqueue-job
-  [pg-conn q job-data &opt limit]
-  (default limit 4096)
-  (def channel (string ))
-  (if (or (nil? limit) (< (count-pending-jobs pg-conn q) limit))
-    (do
-      (def jobid
-        (pq/val pg-conn "insert into jobq(q, data) values($1, $2) returning jobid;" q (string/format "%j" job-data)))
-      (pq/exec pg-conn (string "notify \"jobq-" q "-new\";"))
-      jobid)
+  [pg-conn q job-data limit]
+  (if (< (count-pending-jobs pg-conn q) limit)
+    (enqueue-job pg-conn q job-data)
     nil))
 
 (defn reschedule-job

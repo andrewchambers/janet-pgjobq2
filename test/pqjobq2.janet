@@ -23,8 +23,8 @@
     (do
       (def q "test-q")
       (assert (nil? (pgjobq/next-job pg-conn q)))
-      (assert (pgjobq/try-enqueue-job pg-conn q @{"some" "job"}))
-      (assert (pgjobq/try-enqueue-job pg-conn q @{"some" "other-job"}))
+      (assert (pgjobq/enqueue-job pg-conn q @{"some" "job"}))
+      (assert (pgjobq/try-enqueue-job pg-conn q @{"some" "other-job"} 10))
       (assert (nil? (pgjobq/try-enqueue-job pg-conn q @{"some" "too many jobs"} 2)))
       (assert (= (pgjobq/count-pending-jobs pg-conn q) 2))
       (assert (deep= (pgjobq/next-job pg-conn q)
@@ -33,7 +33,6 @@
       (pgjobq/reschedule-job pg-conn 2)
       (assert (deep= (pgjobq/next-job pg-conn q)
                      @{:jobid (int/s64 2) :position (int/s64 3) :q q :data @{"some" "other-job"}})))
-    
     ))
 
 (run-tests)
